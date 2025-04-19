@@ -66,6 +66,7 @@ class Provider::Plaid
   end
 
   def get_link_token(user_id:, webhooks_url:, redirect_url:, accountable_type: nil, access_token: nil)
+    Rails.logger.info { "[PLAID DEBUG] Creating Link Token with redirect_url: #{redirect_url}" }
     request_params = {
       user: { client_user_id: user_id },
       client_name: "Maybe Finance",
