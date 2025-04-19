@@ -22,6 +22,10 @@ class Provider::Plaid
     case [ type, code ]
     when [ "TRANSACTIONS", "SYNC_UPDATES_AVAILABLE" ]
       item.sync_later
+    when [ "TRANSACTIONS", "HISTORICAL_UPDATE" ]
+      item.sync_later
+    when [ "TRANSACTIONS", "INITIAL_UPDATE" ]
+      item.sync_later
     when [ "INVESTMENTS_TRANSACTIONS", "DEFAULT_UPDATE" ]
       item.sync_later
     when [ "HOLDINGS", "DEFAULT_UPDATE" ]
