@@ -148,9 +148,9 @@ class PlaidAccount < ApplicationRecord
 
     def derive_plaid_cash_balance(plaid_balances)
       if account.investment?
-        plaid_balances.available || 0
+        plaid_balances.current || plaid_balances.available
       else
-        # For now, we will not distinguish between "cash" and "overall" balance for non-investment accounts
+        # um what if we didnt do that, ZACH...
         plaid_balances.current || plaid_balances.available
       end
     end
