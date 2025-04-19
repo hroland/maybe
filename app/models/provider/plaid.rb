@@ -1,7 +1,7 @@
 class Provider::Plaid
   attr_reader :client, :region
 
-  MAYBE_SUPPORTED_PLAID_PRODUCTS = %w[transactions investments liabilities].freeze
+  MAYBE_SUPPORTED_PLAID_PRODUCTS = %w[transactions].freeze
   MAX_HISTORY_DAYS = Rails.env.development? ? 90 : 730
 
   def initialize(config, region: :us)
