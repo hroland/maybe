@@ -7,6 +7,11 @@ module Account::Chartable
 
       series_interval = interval || period.interval
 
+      # Log the SQL query and parameters for debugging
+      sql_query = balance_series_query
+      Rails.logger.info("[Chartable] Running balance_series SQL: #{sql_query}")
+      Rails.logger.info("[Chartable] With params: start_date=#{period.start_date}, end_date=#{period.end_date}, interval=#{series_interval}, target_currency=#{currency}, account_ids=#{all.select(:id).to_sql}")
+
       balances = Balance.find_by_sql([
         balance_series_query,
         {
