@@ -34,16 +34,16 @@ module ExchangeRate::Provided
     end
 
     def find_closest_rate(from:, to:, date:)
-      # find the closest rate by date (either before or after the requested date)
+      # Find the closest rate by date (either before or after the requested date)
       closest_rate = where(from_currency: from, to_currency: to)
-        .order(Arel.sql("ABS(EXTRACT(EPOCH FROM (date - '#{date}'::date)))"))
+        .order(Arel.sql("ABS((date - '#{date}'::date))"))
         .first
 
       return closest_rate if closest_rate.present?
 
-      # if no rate found, try the reverse conversion (1/rate)
+      # If no rate found, try the reverse conversion (1/rate)
       closest_reverse = where(from_currency: to, to_currency: from)
-        .order(Arel.sql("ABS(EXTRACT(EPOCH FROM (date - '#{date}'::date)))"))
+        .order(Arel.sql("ABS((date - '#{date}'::date))"))
         .first
 
       if closest_reverse.present?

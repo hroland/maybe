@@ -76,7 +76,7 @@ module Account::Chartable
             FROM exchange_rates er
             WHERE er.from_currency = accounts.currency
               AND er.to_currency = :target_currency
-            ORDER BY ABS(EXTRACT(EPOCH FROM (er.date - d.date))) ASC
+            ORDER BY ABS((er.date - d.date)) ASC
             LIMIT 1
           ) AS closest_er ON accounts.currency <> :target_currency
           GROUP BY d.date

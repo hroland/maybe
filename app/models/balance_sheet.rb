@@ -90,7 +90,7 @@ class BalanceSheet
                   FROM exchange_rates er
                   WHERE er.from_currency = accounts.currency
                     AND er.to_currency = ?
-                  ORDER BY ABS(EXTRACT(EPOCH FROM (er.date - CURRENT_DATE))) ASC
+                  ORDER BY ABS((er.date - CURRENT_DATE)) ASC
                   LIMIT 1
                 ) AS closest_exchange_rate ON accounts.currency <> ?
               },

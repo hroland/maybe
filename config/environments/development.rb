@@ -17,6 +17,96 @@ Rails.application.configure do
   # Enable server timing
   config.server_timing = true
 
+  # Use a custom exceptions app in development to show more detailed errors
+  config.exceptions_app = ->(env) do
+    request = ActionDispatch::Request.new(env)
+    exception = env["action_dispatch.exception"]
+    trace = exception.backtrace.join("\n")
+    
+    content = <<~HTML
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Error: #{exception.class.name}</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            line-height: 1.5;
+          }
+          .header {
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+          }
+          .error-message {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            margin-bottom: 20px;
+          }
+          .trace {
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 10px;
+            overflow-x: auto;
+            font-family: monospace;
+            white-space: pre;
+          }
+          .section {
+            margin-bottom: 20px;
+          }
+          h2 {
+            color: #333;
+            margin-top: 25px;
+          }
+          .request-details {
+            font-family: monospace;
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Error: #{exception.class.name}</h1>
+        </div>
+        
+        <div class="section">
+          <h2>Error Message</h2>
+          <div class="error-message">
+            <strong>#{exception.message}</strong>
+          </div>
+        </div>
+        
+        <div class="section">
+          <h2>Stack Trace</h2>
+          <div class="trace">#{trace}</div>
+        </div>
+        
+        <div class="section">
+          <h2>Request Details</h2>
+          <div class="request-details">
+            <strong>URL:</strong> #{request.url}<br>
+            <strong>HTTP Method:</strong> #{request.request_method}<br>
+            <strong>Remote IP:</strong> #{request.remote_ip}<br>
+            <strong>Parameters:</strong> #{request.parameters.inspect}<br>
+            <strong>Query String:</strong> #{request.query_string}<br>
+          </div>
+        </div>
+      </body>
+      </html>
+    HTML
+    
+    [500, {"Content-Type" => "text/html"}, [content]]
+  end
+
   # Enable/disable caching. By default caching is disabled.
   # Run rails dev:cache to toggle caching.
   if Rails.root.join("tmp/caching-dev.txt").exist?
