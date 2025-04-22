@@ -83,11 +83,23 @@ class BalanceSheet
 
     def totals_query
       @totals_query ||= active_accounts
-            .joins(ActiveRecord::Base.sanitize_sql_array([ "LEFT JOIN exchange_rates ON exchange_rates.date = CURRENT_DATE AND accounts.currency = exchange_rates.from_currency AND exchange_rates.to_currency = ?", currency ]))
+            .joins(ActiveRecord::Base.sanitize_sql_array([
+              %{
+                LEFT JOIN LATERAL (
+                  SELECT er.rate
+                  FROM exchange_rates er
+                  WHERE er.from_currency = accounts.currency
+                    AND er.to_currency = ?
+                  ORDER BY ABS((er.date - CURRENT_DATE)) ASC
+                  LIMIT 1
+                ) AS closest_exchange_rate ON accounts.currency <> ?
+              },
+              currency, currency
+            ]))
             .select(
               "accounts.*",
-              "SUM(accounts.balance * COALESCE(exchange_rates.rate, 1)) as converted_balance",
-              ActiveRecord::Base.sanitize_sql_array([ "COUNT(CASE WHEN accounts.currency <> ? AND exchange_rates.rate IS NULL THEN 1 END) as missing_rates", currency ])
+              "SUM(accounts.balance * COALESCE(closest_exchange_rate.rate, 1)) as converted_balance",
+              ActiveRecord::Base.sanitize_sql_array([ "COUNT(CASE WHEN accounts.currency <> ? AND closest_exchange_rate.rate IS NULL THEN 1 END) as missing_rates", currency ])
             )
             .group(:classification, :accountable_type, :id)
             .to_a
