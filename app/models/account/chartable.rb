@@ -60,10 +60,10 @@ module Account::Chartable
           )
           SELECT
             d.date,
-            SUM(CASE WHEN accounts.classification = 'asset' THEN ab.balance ELSE -ab.balance END * COALESCE(closest_er.rate, 1)) as balance,
-            SUM(CASE WHEN accounts.classification = 'asset' THEN ab.cash_balance ELSE -ab.cash_balance END * COALESCE(closest_er.rate, 1)) as cash_balance,
-            SUM(CASE WHEN accounts.classification = 'asset' THEN ab.balance - ab.cash_balance ELSE 0 END * COALESCE(closest_er.rate, 1)) as holdings_balance,
-            COUNT(CASE WHEN accounts.currency <> :target_currency AND closest_er.rate IS NULL THEN 1 END) as missing_rates
+            SUM(CASE WHEN accounts.classification = 'asset' THEN ab.balance ELSE -ab.balance END * COALESCE(er.rate, 1)) as balance,
+            SUM(CASE WHEN accounts.classification = 'asset' THEN ab.cash_balance ELSE -ab.cash_balance END * COALESCE(er.rate, 1)) as cash_balance,
+            SUM(CASE WHEN accounts.classification = 'asset' THEN ab.balance - ab.cash_balance ELSE 0 END * COALESCE(er.rate, 1)) as holdings_balance,
+            COUNT(CASE WHEN accounts.currency <> :target_currency AND er.rate IS NULL THEN 1 END) as missing_rates
           FROM dates d
           LEFT JOIN accounts ON accounts.id IN (#{all.select(:id).to_sql})
           LEFT JOIN balances ab ON (
@@ -71,14 +71,11 @@ module Account::Chartable
             ab.currency = accounts.currency AND
             ab.account_id = accounts.id
           )
-          LEFT JOIN LATERAL (
-            SELECT er.rate
-            FROM exchange_rates er
-            WHERE er.from_currency = accounts.currency
-              AND er.to_currency = :target_currency
-            ORDER BY ABS((er.date - d.date)) ASC
-            LIMIT 1
-          ) AS closest_er ON accounts.currency <> :target_currency
+          LEFT JOIN exchange_rates er ON (
+            er.date = ab.date AND
+            er.from_currency = accounts.currency AND
+            er.to_currency = :target_currency
+          )
           GROUP BY d.date
           ORDER BY d.date
         SQL
