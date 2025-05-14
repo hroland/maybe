@@ -14,9 +14,7 @@
   </head>
 
   <body class="h-full overflow-hidden lg:overflow-auto antialiased">
-    <% if Rails.env.development? %>
-      <button hidden data-controller="hotkey" data-hotkey="t t /" data-action="theme#toggle"></button>
-    <% end %>
+    <button hidden data-controller="hotkey" data-hotkey="t t /" data-action="theme#toggle"></button>
 
     <div class="fixed z-50 top-6 md:top-4 left-1/2 -translate-x-1/2 w-full md:w-80 px-4 md:px-0 mx-auto md:mx-0 md:right-auto mt-safe">
       <div id="notification-tray" class="space-y-1 w-full">

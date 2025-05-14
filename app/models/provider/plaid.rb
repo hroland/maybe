@@ -2,7 +2,7 @@ class Provider::Plaid
   attr_reader :client, :region
 
   MAYBE_SUPPORTED_PLAID_PRODUCTS = %w[transactions].freeze
-  MAX_HISTORY_DAYS = Rails.env.development? ? 90 : 730
+  MAX_HISTORY_DAYS = 730
 
   def initialize(config, region: :us)
     @client = Plaid::PlaidApi.new(
