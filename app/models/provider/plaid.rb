@@ -1,8 +1,8 @@
 class Provider::Plaid
   attr_reader :client, :region
 
-  MAYBE_SUPPORTED_PLAID_PRODUCTS = %w[transactions investments liabilities].freeze
-  MAX_HISTORY_DAYS = Rails.env.development? ? 90 : 730
+  MAYBE_SUPPORTED_PLAID_PRODUCTS = %w[transactions].freeze
+  MAX_HISTORY_DAYS = 730
 
   def initialize(config, region: :us)
     @client = Plaid::PlaidApi.new(
@@ -21,6 +21,10 @@ class Provider::Plaid
 
     case [ type, code ]
     when [ "TRANSACTIONS", "SYNC_UPDATES_AVAILABLE" ]
+      item.sync_later
+    when [ "TRANSACTIONS", "HISTORICAL_UPDATE" ]
+      item.sync_later
+    when [ "TRANSACTIONS", "INITIAL_UPDATE" ]
       item.sync_later
     when [ "INVESTMENTS_TRANSACTIONS", "DEFAULT_UPDATE" ]
       item.sync_later
@@ -66,6 +70,7 @@ class Provider::Plaid
   end
 
   def get_link_token(user_id:, webhooks_url:, redirect_url:, accountable_type: nil, access_token: nil)
+    Rails.logger.info { "[PLAID DEBUG] Creating Link Token - redirect_url: #{redirect_url}, webhooks_url: #{webhooks_url}" }
     request_params = {
       user: { client_user_id: user_id },
       client_name: "Maybe Finance",
